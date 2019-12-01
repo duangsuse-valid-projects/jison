@@ -18,3 +18,25 @@ fun <T, R> Parser<T, R>.tryRead(feeder: Feeder<T>): R? {
   fun read(): R? = try { this(feeder) } catch (_: FiniteStream.StreamEnd) { nParsed }
   return (feeder as? MarkReset)?.positional(::read) ?: read()
 }
+
+fun <T, R: Any?> Parser<T, R>.toMust(failMessage: String): Parser<T, R> = {
+  this(it) ?: it.pFail(failMessage)
+}
+fun <T> Parser<T, *>.toParsedPosNeg(): PositiveParser<T, Boolean> = posNeg@ {
+  return@posNeg this(it) != null
+}
+fun <T, R> Parser<T, R>.toDefault(defaultValue: R): PositiveParser<T, R> = defaulting@ {
+  return@defaulting this(it) ?: defaultValue
+}
+fun parserFail(failMessage: String): ParserFailure<*> = { it.pFail(failMessage) }
+
+infix fun <T, R, R1> Parser<T, R>.then(op: (R) -> R1): Parser<T, R1> = pipe@ {
+  return@pipe this(it)?.let(op)
+}
+
+infix fun <T, R, R1> Parser<T, R>.contextual(next: (R) -> Parser<T, R1>): Parser<T, R1> = contextRewrite@ {
+  val base = this(it)
+  return@contextRewrite base?.let(next)?.invoke(it)
+}
+
+infix fun <T, R1> Parser<T, *>.const(constant: R1): Parser<T, R1> = this then { constant }
