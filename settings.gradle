@@ -1,0 +1,13 @@
+pluginManagement {
+  it.resolutionStrategy { it.eachPlugin {
+    switch (it.requested.id) {
+      case 'kotlin-multiplatform':
+        it.useModule(settings.ext.kotlin('gradle-plugin', it.requested.version)); break
+      default: break
+    }
+  } }
+}
+
+ext.kotlin = { artifact, version -> "org.jetbrains.kotlin:kotlin-$artifact:$version" }
+
+rootProject.name = 'trie'

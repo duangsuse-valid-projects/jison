@@ -1,0 +1,7 @@
+build/
+.gradle/
+.idea/artifacts/
+.idea/modules/
+.idea/codeStyles/
+.idea/*.xml
+.idea/$*
