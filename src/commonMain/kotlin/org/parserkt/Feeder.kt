@@ -5,10 +5,11 @@ import org.parserkt.util.Predicate
 import org.parserkt.util.MarkReset
 import org.parserkt.util.positional
 
-/** Parser-friendly [peek]/[consume] modeled [Iterator] */
+/** Parser-friendly [peek]/[consume] modeled [Iterator], [quake] can give detailed source location */
 interface Feeder<out T> {
   val peek: T
   fun consume(): T
+  fun quake(error: Exception): Nothing = throw error
 }
 /** [Feeder] with bulk [take] */
 interface BulkFeeder<out T>: Feeder<T> {

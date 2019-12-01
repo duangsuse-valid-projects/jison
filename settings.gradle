@@ -10,4 +10,4 @@ pluginManagement {
 
 ext.kotlin = { artifact, version -> "org.jetbrains.kotlin:kotlin-$artifact:$version" }
 
-rootProject.name = 'trie'
+rootProject.name = 'jison'

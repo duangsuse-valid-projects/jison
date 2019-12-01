@@ -22,6 +22,7 @@ fun <T> items(vararg xs: T): Parser<T, Array<out T>> = read@ { s ->
 inline fun <reified T> items(n: Cnt): PositiveParser<T, Array<T>> = readCount@ { s ->
   val res = arrayOfNulls<T>(n)
   for (i in 0 until n) res[i] = s.consume()
+  @Suppress("UNCHECKED_CAST") //it's really ALL T!
   return@readCount res as Array<T>
 }
 

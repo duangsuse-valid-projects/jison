@@ -11,7 +11,7 @@ typealias NegativeParser<T> = (Feeder<T>) -> Nothing?
 typealias ParserFailure<T> = (Feeder<T>) -> Nothing
 
 class ParserError(extra: String): Exception("parser fail$extra")
-fun pFail(extra: String): Nothing = throw ParserError(extra)
+fun Feeder<*>.pFail(extra: String): Nothing = quake(ParserError(extra))
 inline val nParsed: Nothing? get() = null
 
 fun <T, R> Parser<T, R>.tryRead(feeder: Feeder<T>): R? {

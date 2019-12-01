@@ -11,7 +11,7 @@ package org.jison
 abstract class BangParser<R>(private val part: Array<out String>) {
   protected abstract fun onItem(item: String)
   protected abstract fun onBang(part: List<String>)
-  protected abstract fun parseResult(): R
+  protected abstract val parseResult: R
 
   class ParseError(message: String): Exception(message)
   protected open val bangRegex = Regex("^--?(.*)$")
@@ -28,11 +28,10 @@ abstract class BangParser<R>(private val part: Array<out String>) {
     while (!isEnd) {
       bangRegex.find(argument)?.groupValues?.let {
         try { onBang(it) }
-        catch (e: ParseError) { throw ParseError("$it: ${e.message}")
-        }
+        catch (e: ParseError) { throw ParseError("$it: ${e.message}") }
       } ?: onItem(argument)
       ++position
     }
-    return parseResult()
+    return parseResult
   }
 }

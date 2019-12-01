@@ -1,25 +1,26 @@
 package org.parserkt.comb
 
-fun <T, R> maySeq(vararg sub: Parser<T, R>): Parser<T, List<R>> = runParse@ {
-  val result = mutableListOf<R>()
-  for (parse in sub) result.add(parse.tryRead(it) ?: return@runParse nParsed)
-  return@runParse result
+fun <IN, T, R> maySeq(fold: Fold<T, R>, vararg sub: Parser<IN, T>): Parser<IN, R> = runParse@ {
+  val reducer = fold.reducer()
+  for (parse in sub) reducer.accept(parse.tryRead(it) ?: return@runParse nParsed)
+  return@runParse reducer.base
 }
 
-fun <T, R> seq(vararg sub: Parser<T, R>): PositiveParser<T, List<R>> = runParse@ {
-  val result = mutableListOf<R>()
+fun <IN, T, R> seq(fold: Fold<T, R>, vararg sub: Parser<IN, T>): PositiveParser<IN, R> = runParse@ {
+  val reducer = fold.reducer()
   for ((index, parse) in sub.withIndex())
-    result.add(parse.tryRead(it) ?: pFail(": seq $index"))
-  return@runParse result
+    reducer.accept(parse.tryRead(it) ?: it.pFail(": seq $index"))
+  return@runParse reducer.base
 }
 
-fun <T, R> repeat(sub: Parser<T, R>): Parser<T, List<R>> = runParse@ {
-  val result = mutableListOf<R>()
+fun <IN, T, R> repeat(fold: Fold<T, R>, sub: Parser<IN, T>): Parser<IN, R> = runParse@ {
+  val reducer = fold.reducer()
+  var countParsed = 0
   while (true) {
     val parsed = sub.tryRead(it) ?: break
-    result.add(parsed)
+    reducer.accept(parsed).also { ++countParsed }
   }
-  return@runParse result.takeIf { r -> r.isNotEmpty() }
+  return@runParse reducer.base.takeIf { countParsed != 0 }
 }
 
 fun <T, R> or(vararg sub: Parser<T, R>): Parser<T, R> = runParse@ {
@@ -28,5 +29,11 @@ fun <T, R> or(vararg sub: Parser<T, R>): Parser<T, R> = runParse@ {
 }
 
 fun <T, R: Any?> Parser<T, R>.toMust(failMessage: String): Parser<T, R> = {
-  this(it) ?: pFail(failMessage)
+  this(it) ?: it.pFail(failMessage)
 }
+fun parserFail(failMessage: String): ParserFailure<*> = { it.pFail(failMessage) }
+
+////
+fun <T, R> seq(vararg sub: Parser<T, R>): PositiveParser<T, MutableList<R>> = seq(asList(), *sub)
+fun <T, R> maySeq(vararg sub: Parser<T, R>): Parser<T, MutableList<R>> = maySeq(asList(), *sub)
+fun <T, R> repeat(sub: Parser<T, R>): Parser<T, List<R>> = repeat(asList(), sub)
