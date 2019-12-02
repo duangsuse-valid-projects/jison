@@ -2,6 +2,7 @@ package org.parserkt.comb
 
 import org.parserkt.*
 import org.parserkt.util.Cnt
+import org.parserkt.util.MarkReset
 
 /** <[file]>:[line]:[column] #[position] */
 data class SourceLocation(var file: String?, var line: Cnt = 1, var column: Cnt = 1, var position: Cnt = 0) {
@@ -19,7 +20,7 @@ var briefViewport = { _: SliceFeeder<*>? -> DEFAULT_VIEWPORT }
  * + [ScannerOpts] is not supported by this utility, since [ScannerOpts.dropWhileIn] is uncounted
  */
 open class ParsingFeeder<out T>(protected open val inner: Feeder<T>,
-    private val srcLoc: SourceLocation): Feeder<T> by inner {
+    private val srcLoc: SourceLocation): Feeder<T> by inner, MarkReset {
   constructor(slice: Slice<T>, file: String? = null): this(SliceFeeder(slice), SourceLocation(file))
   constructor(stream: Iterator<T>, file: String? = null): this(StreamFeeder(stream), SourceLocation(file))
 
@@ -50,6 +51,9 @@ open class ParsingFeeder<out T>(protected open val inner: Feeder<T>,
       else -> null
     }
   }
+
+  override fun mark() { (inner as? MarkReset)?.mark() }
+  override fun reset() { (inner as? MarkReset)?.reset() }
 }
 
 class BulkParsingFeeder<out T>(override val inner: BulkFeeder<T>, srcLoc: SourceLocation):

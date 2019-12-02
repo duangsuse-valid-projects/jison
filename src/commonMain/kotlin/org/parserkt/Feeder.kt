@@ -12,6 +12,7 @@ interface Feeder<out T> {
 }
 /** [Feeder] with bulk [take] */
 interface BulkFeeder<out T>: Feeder<T> {
+  /** Take (from current position, begin at [peek]) */
   fun take(n: Cnt): Viewport<T>
   /** After getting [Viewport] with [takeItemN],
    * + [consume] to actual move data pointer
@@ -29,7 +30,7 @@ interface ScannerOpts<T> {
 }
 
 const val PROTECTED_STREAM = "Cannot mutate stream while take staging"
-open class SliceFeeder<T>(private val stream: SliceStream<T>): BulkFeeder<T>, ScannerOpts<T> {
+open class SliceFeeder<T>(private val stream: SliceStream<T>): BulkFeeder<T>, ScannerOpts<T>, MarkReset by stream {
   constructor(input: Slice<T>): this(input.stream())
   override val peek: T get() = stream.peek
   override fun consume(): T {

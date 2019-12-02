@@ -2,8 +2,8 @@ package org.parserkt
 import org.parserkt.util.*
 
 interface FiniteStream<out T> {
-  abstract val isEnd: Boolean
-  abstract operator fun next(): T
+  val isEnd: Boolean
+  operator fun next(): T
   class StreamEnd(message: String? = null): Exception(message ?: "no more item")
   operator fun hasNext(): Boolean = !isEnd
   operator fun iterator(): FiniteStream<T> = this
@@ -47,12 +47,12 @@ class MarkResetPeekStream<T>(private val iterator: Iterator<T>): BufferStackMark
   override val isEnd: Boolean get() = !iterator.hasNext() && resetting.isEmpty()
   override fun next(): T {
     val next = if (resetting.isNotEmpty())
-      resetting.removeAtBegin() else
+      resetting.removeAtEnd() else
         try { iterator.next() }
         catch (_: NoSuchElementException) { throw FiniteStream.StreamEnd() }
     layer?.add(next)
     return next
   }
   override val peek: T get() = positional { next() }
-  override fun reset() { layer?.let { resetting.addAll(it) }; super.reset() }
+  override fun reset() { layer?.let { resetting.addAll(it.reversed()) }; super.reset() }
 }

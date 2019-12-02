@@ -10,12 +10,12 @@ import kotlin.test.assertEquals
 
 class ParsingFeederTests {
   object NoError: Exception("nope")
-  @Test fun sourceLocated() {
-    val pf = bulkParsingFeeder(str = """
+  private val pf = bulkParsingFeeder(str = """
       hello,
       cruel
       world.
     """.trimIndent() + "\r\nCRLF", file = "test.txt")
+  @Test fun sourceLocated() {
     fun assertMessage(expected: String): Unit = assertFailMessageEquals(expected, pf)
     assertMessage("parser fail@test.txt:1:1 #0: nope")
 

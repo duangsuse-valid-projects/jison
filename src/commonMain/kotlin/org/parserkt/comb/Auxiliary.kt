@@ -19,7 +19,9 @@ inline val nParsed: Nothing? get() = null
 /** Read from [feeder], ignore [FiniteStream.StreamEnd] ([nParsed]), [positional] if [MarkReset]-able */
 fun <T, R> Parser<T, R>.tryRead(feeder: Feeder<T>): R? {
   fun read(): R? = try { this(feeder) } catch (_: FiniteStream.StreamEnd) { nParsed }
-  return (feeder as? MarkReset)?.positional(::read) ?: read()
+  return (feeder as? MarkReset)?.run {
+    mark(); read() ?: nParsed.also { reset() }
+  } ?: read()
 }
 
 fun <T, R: Any?> Parser<T, R>.toMust(failMessage: String): PositiveParser<T, R>
