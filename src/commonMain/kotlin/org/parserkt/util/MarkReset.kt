@@ -2,9 +2,10 @@ package org.parserkt.util
 
 /** Object with capacity of saving/restoring its state
  * + [mark]/[reset] call should be paired
- * + [mark] could be called before pairing [reset] */
+ * + [mark] could be called before pairing [reset]
+ * + [unmark] is optional */
 interface MarkReset
-  { fun mark() fun reset() }
+  { fun mark() fun reset() fun unmark() = Unit }
 /** Run [op] operation in [MarkReset.mark], [op] finally [MarkReset.reset] form. */
 fun <R> MarkReset.positional(op: Producer<R>): R = try { mark(); op() } finally { reset() }
 
@@ -15,6 +16,7 @@ abstract class StateStackMarkReset<ST>: MarkReset {
   private val stack: MutableList<ST> by lazy(::mutableListOf)
   override fun mark() { stack.add(saved) }
   override fun reset() { saved = stack.removeAtEnd() }
+  override fun unmark() { stack.removeAtEnd() }
 }
 
 /** [MarkReset] with buffer [layer] (`null` when not marking),
@@ -26,4 +28,5 @@ abstract class BufferStackMarkReset<BUF>: MarkReset {
   override fun mark() { layer = emptyBuffer(); stack.add(layer!!) }
   /** Add 'before' logic to consume current [layer] */
   override fun reset() { stack.removeAtEnd(); layer = stack.lastOrNull() }
+  override fun unmark() { stack.removeAtEnd() }
 }
