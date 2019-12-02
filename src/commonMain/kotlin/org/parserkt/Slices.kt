@@ -34,6 +34,7 @@ class CharSlice(private val charSeq: CharSequence): Slice<Char> {
   override fun get(indices: IdxRange): Slice<Char> = CharSlice(charSeq.subSequence(indices))
 }
 
+typealias Viewport = Pair<Int, Int>
 class SliceStream<out T>(private val slice: Slice<T>): PeekStream<T>, TakeStream<T>, StateStackMarkReset<Idx>() {
   private var ptr: Idx = 0
   override var saved: Idx
@@ -48,4 +49,5 @@ class SliceStream<out T>(private val slice: Slice<T>): PeekStream<T>, TakeStream
     if (newExclusive > slice.lastIndex) throw FiniteStream.StreamEnd("take $n at $ptr/${slice.size}")
     return slice[ptr..newExclusive].also { ptr += n }
   }
+  operator fun get(viewport: Viewport): Slice<T> = slice[slice.coerceInbound(ptr+viewport.first..ptr+viewport.second)]
 }

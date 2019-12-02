@@ -4,7 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class SizedAndSliceTests {
+class SliceAndSizedTests {
   private val listSlice = ListSlice(listOf(1, 2, 3))
   private val arraySlice = ArraySlice(arrayOf(1, 2, 3))
   private val charSlice = CharSlice("abc")
@@ -15,7 +15,7 @@ class SizedAndSliceTests {
     assertTF(listSlice) { Pair(isNotEmpty, isEmpty) }
     assertTF(emptySized) { Pair(isEmpty, isNotEmpty) }
   }
-  @Test fun indices() {
+  @Test fun indices() { //and lastIndex
     assertEquals(0..2, listSlice.indices)
     assertEquals(0..2, arraySlice.indices)
     assertEquals(0..2, charSlice.indices)

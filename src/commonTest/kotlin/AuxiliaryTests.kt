@@ -1,7 +1,4 @@
-import org.parserkt.util.impossible
-import org.parserkt.util.removeAtBegin
-import org.parserkt.util.removeAtEnd
-import org.parserkt.util.subList
+import org.parserkt.util.*
 
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -16,5 +13,10 @@ class AuxiliaryTests {
   @Test fun removeAtEnd() { assertEquals(3, list.removeAtEnd()) }
   @Test fun addOrderNote() { list.add(0); assertEquals(listOf(1,2,3,0), list) }
   @Test fun subList() { assertEquals(list, list.subList(list.indices)) }
+
   @Test fun impossibleFails() { assertFails(::impossible) }
+  @Test fun boxCoercion() {
+    val box = Box<Any>(0L)
+    assertEquals(0L, box.force())
+  }
 }

@@ -47,3 +47,10 @@ class TreeRangeMap<in N:Ord<N>, T>: MutableRangeMap<N, T> {
     override fun hashCode(): Int = Ray::class.hashCode()
   }
 }
+
+fun <N:Ord<N>, T> mutableRangeMapOf(vararg item: Pair<RangeIE<N>, T>): MutableRangeMap<N, T>
+  = TreeRangeMap<N, T>().also { for ((k, v) in item) it[k] = v }
+fun <N:Ord<N>, T> rangeMapOf(vararg item: Pair<RangeIE<N>, T>): RangeMap<N, T> = mutableRangeMapOf(*item)
+
+fun <T> intRangeMapOf(vararg item: Pair<IntRange, T>): RangeMap<Int, T>
+  = TreeRangeMap<Int, T>().also { for ((k, v) in item) it[k.first untilIE k.last.inc()] = v }

@@ -13,6 +13,8 @@ fun <E> MutableList<E>.removeAtBegin(): E = this.removeAt(0)
 fun <E> MutableList<E>.removeAtEnd(): E = this.removeAt(lastIndex)
 fun <E> List<E>.subList(indices: IdxRange): List<E> = subList(indices.first, indices.last.inc())
 
+fun <E> MutableList<E>.justAdd(item: E) { add(item) }
+
 fun impossible(): Nothing = throw IllegalStateException()
 
 data class Box<T>(var item: T)

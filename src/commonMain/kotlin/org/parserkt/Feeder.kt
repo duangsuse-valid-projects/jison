@@ -50,6 +50,7 @@ class SliceFeeder<T>(private val stream: SliceStream<T>): BulkFeeder<T>, Scanner
   }
   override fun dropWhileIn(ignore: Set<T>): Unit = dropWhile { it in ignore }
   override fun takeUntilIn(terminator: Set<T>): Slice<T> = takeWhile { it !in terminator }.toList().let(::ListSlice)
+  operator fun get(viewport: Viewport): Slice<T> = stream[viewport]
 }
 
 fun <T> Feeder<T>.dropWhile(predicate: Predicate<T>) {
@@ -63,6 +64,10 @@ fun <T> Feeder<T>.takeWhile(predicate: Predicate<T>): Sequence<T> = sequence {
     if (predicate(peek)) yield(consume())
     else break
   } catch (_: FiniteStream.StreamEnd) {}
+}
+fun <T> StreamFeeder<T>.take(n: Cnt): Sequence<T> {
+  var count = 0
+  return takeWhile { count++ != n }
 }
 
 /** [Feeder] with no-[MarkReset] support (Left Lookahead-1) */

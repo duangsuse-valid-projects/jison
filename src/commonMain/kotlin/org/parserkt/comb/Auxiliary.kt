@@ -1,6 +1,7 @@
 package org.parserkt.comb
 
 import org.parserkt.Feeder
+import org.parserkt.BulkFeeder
 import org.parserkt.FiniteStream
 import org.parserkt.util.Consumer
 import org.parserkt.util.MarkReset
@@ -11,7 +12,9 @@ typealias PositiveParser<T, R> = (Feeder<T>) -> R
 typealias NegativeParser<T> = (Feeder<T>) -> Nothing?
 typealias ParserFailure<T> = (Feeder<T>) -> Nothing
 
-class ParserError(extra: String): Exception("parser fail$extra")
+typealias BulkParser<T, R> = (BulkFeeder<T>) -> R?
+
+class ParserError(extra: String, val briefView: String? = null): Exception("parser fail$extra")
 fun Feeder<*>.pFail(extra: String): Nothing = quake(ParserError(extra))
 inline val nParsed: Nothing? get() = null
 

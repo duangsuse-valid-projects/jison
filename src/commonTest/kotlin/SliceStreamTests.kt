@@ -1,7 +1,9 @@
 import org.parserkt.*
 import org.parserkt.util.positional
+import org.parserkt.util.StateStackMarkReset
 import kotlin.test.*
 
+/** [SliceStream], [StateStackMarkReset] */
 class SliceStreamTests {
   private val slice = ArraySlice(arrayOf(1,2,3))
   private lateinit var stream: SliceStream<Int>
