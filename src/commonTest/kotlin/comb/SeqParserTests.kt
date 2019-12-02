@@ -9,7 +9,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class SeqParserTests {
-  private val numbers = mustSeq(items(1,2,3), items(4,5,6), items(1))
+  private val numbers = mustSeq(items(1,2,3), items(4,5,6), nItem(1))
   @Test fun seq() {
     val res = numbers(feederOf(1,2,3,4,5,6,7))
     assertEquals(listOf(1,2,3), res[0].toList())

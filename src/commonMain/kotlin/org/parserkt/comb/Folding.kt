@@ -1,5 +1,6 @@
 package org.parserkt.comb
 
+import org.parserkt.util.Box
 import org.parserkt.util.Idx
 
 interface Reducer<in T, out R> {
@@ -34,18 +35,16 @@ fun <T> asList(): Effect<T, MutableList<T>> = object: Effect<T, MutableList<T>>(
 fun <T> partialList(vararg indices: Idx): Effect<T, MutableList<T>> = object: Effect<T, MutableList<T>>() {
   private var position = 0
   override val initial: MutableList<T> get() = mutableListOf()
-  override val acceptor: MutableList<T>.(T) -> Unit = { if(position in indices) add(it); ++position }
+  override val acceptor: MutableList<T>.(T) -> Unit = { if (position in indices) add(it); ++position }
 }
 
-data class Box<T>(var item: T)
-fun <T> Box<T?>.get(): T = item!!
 fun <T> selecting(index: Idx): Effect<T, Box<T?>> = object: Effect<T, Box<T?>>() {
   private var position = 0
   override val initial: Box<T?> get() = Box(null)
-  override val acceptor: Box<T?>.(T) -> Unit = { if(position == index) item = it; ++position }
+  override val acceptor: Box<T?>.(T) -> Unit = { if (position == index) item = it; ++position }
 }
 
-fun asString(): Fold<Char, StringBuilder> = object: Fold<Char, StringBuilder>() {
+fun buildStr(): Fold<Char, StringBuilder> = object: Fold<Char, StringBuilder>() {
   override val initial: StringBuilder get() = StringBuilder()
   override fun join(base: StringBuilder, item: Char): StringBuilder = base.append(item)
 }

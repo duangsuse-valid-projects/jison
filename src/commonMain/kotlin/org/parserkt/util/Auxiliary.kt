@@ -14,3 +14,7 @@ fun <E> MutableList<E>.removeAtEnd(): E = this.removeAt(lastIndex)
 fun <E> List<E>.subList(indices: IdxRange): List<E> = subList(indices.first, indices.last.inc())
 
 fun impossible(): Nothing = throw IllegalStateException()
+
+data class Box<T>(var item: T)
+fun <T> Box<T?>.get(): T = item!!
+inline fun <reified R> Box<*>.force(): R = item as R

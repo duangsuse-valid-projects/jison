@@ -2,6 +2,7 @@ package org.jison
 
 import org.jison.Json.Num
 import org.parserkt.comb.*
+import org.parserkt.util.get
 
 interface CombinedParser<R>
   { val file: Parser<Char, R> }
@@ -49,7 +50,7 @@ abstract class Lexer {
   val specialChar = or(seq(selecting(1), items("\\u"), unicodeEscapeVal) then { (it.get() as Int).toChar() },
     seq(selecting(1), item('\\'), escape) then { it.get() })
   val character = or(specialChar, element('\u0020'..Char.MAX_LOW_SURROGATE))
-  val string = repeatUntil(asString(), character, item('"')) then { Json.Str(it.toString()) }
+  val string = repeatUntil(buildStr(), character, item('"')) then { Json.Str(it.toString()) }
 
   val coefficientMap = mapOf('+' to 1, '-' to -1)
   val digitsNoLeadingZero = or(digit, oneNine contextual { digitsCtx(it) })
