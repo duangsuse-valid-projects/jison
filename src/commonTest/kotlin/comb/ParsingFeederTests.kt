@@ -3,7 +3,7 @@ package comb
 import assertMessageEquals
 import org.parserkt.comb.ParserError
 import org.parserkt.comb.ParsingFeeder
-import org.parserkt.comb.parsingFeeder
+import org.parserkt.comb.bulkParsingFeeder
 import org.parserkt.dropWhile
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -11,11 +11,11 @@ import kotlin.test.assertEquals
 class ParsingFeederTests {
   object NoError: Exception("nope")
   @Test fun sourceLocated() {
-    val pf = parsingFeeder(file = "test.txt", str = """
+    val pf = bulkParsingFeeder(str = """
       hello,
       cruel
       world.
-    """.trimIndent() + "\r\nCRLF")
+    """.trimIndent() + "\r\nCRLF", file = "test.txt")
     fun assertMessage(expected: String): Unit = assertFailMessageEquals(expected, pf)
     assertMessage("parser fail@test.txt:1:1 #0: nope")
 

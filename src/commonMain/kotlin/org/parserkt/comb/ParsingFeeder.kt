@@ -20,14 +20,15 @@ var briefViewport = { _: SliceFeeder<*>? -> DEFAULT_VIEWPORT }
  */
 open class ParsingFeeder<out T>(protected open val inner: Feeder<T>,
     private val srcLoc: SourceLocation): Feeder<T> by inner {
-  constructor(file: String? = null, slice: Slice<T>): this(SliceFeeder(slice), SourceLocation(file))
-  constructor(file: String? = null, stream: Iterator<T>): this(StreamFeeder(stream), SourceLocation(file))
+  constructor(slice: Slice<T>, file: String? = null): this(SliceFeeder(slice), SourceLocation(file))
+  constructor(stream: Iterator<T>, file: String? = null): this(StreamFeeder(stream), SourceLocation(file))
+
   override fun consume(): T {
     val took = inner.consume()
     updateSrcLoc(took)
     return took
   }
-  protected fun updateSrcLoc(item: Any?) {
+  protected open fun updateSrcLoc(item: Any?) {
     ++srcLoc.position; ++srcLoc.column
     when (item) {
       '\n' -> { ++srcLoc.line; srcLoc.column = 1 }
@@ -38,16 +39,21 @@ open class ParsingFeeder<out T>(protected open val inner: Feeder<T>,
     }
   }
   override fun quake(error: Exception): Nothing = throw ParserError("@$srcLoc: ${error.message}", briefView())
-  private fun briefView(): String? {
+  protected open fun briefView(): String? {
     return when (inner) {
       is SliceFeeder<T> -> {
         val cfg = briefViewport(inner as SliceFeeder<T>)
         return (inner as SliceFeeder<T>)[Pair(cfg.first, cfg.second)]
           .stream().toList().joinToString(cfg.third)
       }
-      is StreamFeeder<T> -> {
+      is StreamFeeder<T>, is StreamFeederLookahead1<T> -> {
         val cfg = briefViewport(null)
-        return (inner as StreamFeeder<T>).take(cfg.second).joinToString(cfg.third)
+        return inner.takeItemN(cfg.second).joinToString(cfg.third)
+      }
+      is BulkFeeder<T> -> {
+        val cfg = briefViewport(null)
+        return (inner as BulkFeeder<T>).take(cfg.second)
+          .stream().toList().joinToString(cfg.third)
       }
       else -> null
     }
@@ -56,11 +62,14 @@ open class ParsingFeeder<out T>(protected open val inner: Feeder<T>,
 
 class BulkParsingFeeder<out T>(override val inner: BulkFeeder<T>, srcLoc: SourceLocation):
   ParsingFeeder<T>(inner, srcLoc), BulkFeeder<T> {
-  override fun take(n: Cnt): BulkFeeder.Viewport<T> {
-    val took = inner.take(n)
-    took.stream().forEach(::updateSrcLoc)
-    return took
-  }
+  constructor(inner: BulkFeeder<T>, file: String?): this(inner, SourceLocation(file))
+
+  override fun take(n: Cnt): BulkFeeder.Viewport<T>
+    = inner.take(n).also { it.stream().forEach(::updateSrcLoc) }
 }
 
-fun parsingFeeder(file: String? = null, str: CharSequence): ParsingFeeder<Char> = ParsingFeeder(file, CharSlice(str))
+fun parsingFeeder(str: CharSequence, file: String? = null): ParsingFeeder<Char>
+  = ParsingFeeder(CharSlice(str), file)
+
+fun bulkParsingFeeder(str: CharSequence, file: String? = null): BulkParsingFeeder<Char>
+  = BulkParsingFeeder(SliceFeeder(CharSlice(str)), file)
