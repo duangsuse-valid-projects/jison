@@ -1,3 +1,5 @@
+package org.parserkt
+
 import org.parserkt.comb.ParsingFeeder
 import java.io.InputStream
 import java.io.InputStreamReader

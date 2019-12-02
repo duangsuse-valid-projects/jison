@@ -1,4 +1,5 @@
-import org.parserkt.takeWhile
+package org.parserkt
+
 import java.io.ByteArrayInputStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
