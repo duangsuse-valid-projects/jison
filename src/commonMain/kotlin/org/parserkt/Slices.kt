@@ -15,6 +15,12 @@ interface Slice<out T>: Sized, FiniteStreamed<T> {
   operator fun get(indices: IdxRange): Slice<T>
   override fun stream(): SliceStream<T> = SliceStream(this)
 }
+inline fun <reified T> Slice<T>.copyToArray(): Array<T> {
+  val ary = arrayOfNulls<T>(size)
+  for (i in indices) ary[i] = this[i]
+  @Suppress("UNCHECKED_CAST") //it's really ALL T!
+  return ary as Array<T>
+}
 
 class ArraySlice<out T>(private val ary: Array<T>): Slice<T> {
   override val size = ary.size

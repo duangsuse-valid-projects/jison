@@ -40,21 +40,13 @@ open class ParsingFeeder<out T>(protected open val inner: Feeder<T>,
   }
   override fun quake(error: Exception): Nothing = throw ParserError("@$srcLoc: ${error.message}", briefView())
   protected open fun briefView(): String? {
-    return when (inner) {
-      is SliceFeeder<T> -> {
-        val cfg = briefViewport(inner as SliceFeeder<T>)
-        return (inner as SliceFeeder<T>)[Pair(cfg.first, cfg.second)]
-          .stream().toList().joinToString(cfg.third)
-      }
-      is StreamFeeder<T>, is StreamFeederLookahead1<T> -> {
-        val cfg = briefViewport(null)
-        return inner.takeItemN(cfg.second).joinToString(cfg.third)
-      }
-      is BulkFeeder<T> -> {
-        val cfg = briefViewport(null)
-        return (inner as BulkFeeder<T>).take(cfg.second)
-          .stream().toList().joinToString(cfg.third)
-      }
+    val cfg = briefViewport(inner as? SliceFeeder<T>)
+    return when (val innerFeed = inner) {
+      is SliceFeeder<T> -> innerFeed[Pair(cfg.first, cfg.second)]
+        .stream().toList().joinToString(cfg.third) //NOTE: data pointer will not mutate
+      is StreamFeeder<T>, is StreamFeederLookahead1<T> -> innerFeed.takeItemN(cfg.second).joinToString(cfg.third)
+      is BulkFeeder<T> -> innerFeed.take(cfg.second).consume()
+        .stream().toList().joinToString(cfg.third)
       else -> null
     }
   }

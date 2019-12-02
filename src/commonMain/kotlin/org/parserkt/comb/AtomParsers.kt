@@ -17,12 +17,14 @@ fun <T> items(vararg xs: T): Parser<T, Array<out T>> = read@ { s ->
     else return@read nParsed
   return@read xs
 }
-fun items(keyword: CharSequence): Parser<Char, Array<out Char>> = items(*keyword.toList().toTypedArray())
+fun items(keyword: CharSequence): Parser<Char, Array<out Char>>
+  = items(*keyword.toList().toTypedArray())
 inline fun <reified T> nItem(n: Cnt): PositiveParser<T, Array<T>> = readCount@ { s ->
+  if (s is BulkFeeder<T>) return@readCount s.take(n).consume().copyToArray()
   val res = arrayOfNulls<T>(n)
   for (i in 0 until n) res[i] = s.consume()
   @Suppress("UNCHECKED_CAST") //it's really ALL T!
-  return@readCount res as Array<T>
+  return@readCount (res as Array<T>)
 }
 
 fun <T> skip(ignore: Set<T>): PositiveParser<T, Unit>

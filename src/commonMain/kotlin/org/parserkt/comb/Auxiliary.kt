@@ -3,9 +3,7 @@ package org.parserkt.comb
 import org.parserkt.Feeder
 import org.parserkt.BulkFeeder
 import org.parserkt.FiniteStream
-import org.parserkt.util.Consumer
-import org.parserkt.util.MarkReset
-import org.parserkt.util.positional
+import org.parserkt.util.*
 
 typealias Parser<T, R> = (Feeder<T>) -> R?
 typealias PositiveParser<T, R> = (Feeder<T>) -> R
@@ -18,6 +16,7 @@ class ParserError(extra: String, val briefView: String? = null): Exception("pars
 fun Feeder<*>.pFail(extra: String): Nothing = quake(ParserError(extra))
 inline val nParsed: Nothing? get() = null
 
+/** Read from [feeder], ignore [FiniteStream.StreamEnd] ([nParsed]), [positional] if [MarkReset]-able */
 fun <T, R> Parser<T, R>.tryRead(feeder: Feeder<T>): R? {
   fun read(): R? = try { this(feeder) } catch (_: FiniteStream.StreamEnd) { nParsed }
   return (feeder as? MarkReset)?.positional(::read) ?: read()
@@ -36,11 +35,15 @@ fun parserFail(failMessage: String): ParserFailure<*> = { it.pFail(failMessage) 
 
 infix fun <T, R, R1> Parser<T, R>.then(op: (R) -> R1): Parser<T, R1>
   = pipe@ { return@pipe this(it)?.let(op) }
+infix fun <T, R1> Parser<T, *>.const(constant: R1): Parser<T, R1>
+  = this then { constant }
+inline fun <T, reified R1> Parser<T, Box<*>>.unwrap(): Parser<T, R1>
+  = this then { it.force<R1>() }
 
-infix fun <T, R1> Parser<T, *>.const(constant: R1): Parser<T, R1> = this then { constant }
-
+/** Contextual parser: construct target parser dynamically via [next] */
 infix fun <T, R, R1> Parser<T, R>.contextual(next: (R) -> Parser<T, R1>): Parser<T, R1>
   = ctxRewrite@ { return@ctxRewrite this(it)?.let(next)?.invoke(it) }
 
+/** Side-effect [op] when parser success */
 infix fun <T, R> Parser<T, R>.effect(op: Consumer<R>): Parser<T, R>
   = effectAlso@{ return@effectAlso this(it)?.also(op) }
