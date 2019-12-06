@@ -18,7 +18,7 @@ interface MutableRangeMap<in N:Ord<N>, T>: RangeMap<N, T>
 
 /** A [RangeMap] implemented by sorted map
  * + NOTE: RangeMap is __not ready__ to handle overlapping ranges */
-class TreeRangeMap<in N:Ord<N>, T>: MutableRangeMap<N, T> {
+open class TreeRangeMap<in N:Ord<N>, T>: MutableRangeMap<N, T> {
   private val tree: TreeSet<Ray<N, out T>> = TreeSet()
 
   override fun get(index: N): T? = searchMaxLE(index)?.item

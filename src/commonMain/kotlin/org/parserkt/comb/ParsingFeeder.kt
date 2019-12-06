@@ -68,14 +68,15 @@ class BulkParsingFeeder<out T>(override val inner: BulkFeeder<T>, srcLoc: Source
           ||items[i.inc()] != '\n') ++srcLoc.line
       }
     }
-    val oldColumn = srcLoc.column
+    var found: Int? = null
     findMark@ for ((i, c) in items.indices.reversed().withIndex()) when (items[c]) {
-      '\r' -> { srcLoc.column = items.size-i; break@findMark }
-      '\n' -> { srcLoc.column = items.size-i
-        if (items[c.dec()] == '\r') --srcLoc.column
+      '\r' -> { found = i; break@findMark }
+      '\n' -> { found = i
+        if (items[c.dec()] == '\r') --found
         break@findMark }
     }
-    if (srcLoc.column == oldColumn) srcLoc.column += items.size.dec() // in-line
+    found?.let { srcLoc.column = it.inc() } // items.size - (items.size-it).dec()
+      ?: run { srcLoc.column = items.size } // first-line
   }
 
   override fun take(n: Cnt): BulkFeeder.Viewport<T> = inner.take(n).let { view ->

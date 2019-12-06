@@ -2,6 +2,7 @@ package comb
 
 import assertMessageEquals
 import org.parserkt.Feeder
+import org.parserkt.asSequence
 import org.parserkt.comb.ParserError
 import org.parserkt.comb.ParsingFeeder
 import org.parserkt.comb.bulkParsingFeeder
@@ -40,7 +41,7 @@ class ParsingFeederTests {
   private val bpf = bulkParsingFeeder(str = """
     One day, a cool boy
       living in a pretty house
-     fall in love with
+     falls in love with
        an ugly frog.
   """.trimIndent()+"\r"+"""
     The frog says:
@@ -53,9 +54,21 @@ class ParsingFeederTests {
     assertMessage("parser fail@<anon>:1:1 #0: nope")
     bpf.take(10).ignore()
     assertMessage("parser fail@<anon>:1:1 #0: nope")
-    bpf.take(10).consume()
-    assertMessage("parser fail@<anon>:1:1 #0: nope")
+    assertEquals("One day, a", takes())
+    assertMessage("parser fail@<anon>:1:10 #9: nope")
+    assertEquals(" cool boy\n", takes())
+    assertMessage("parser fail@<anon>:2:1 #18: nope")
+    assertEquals("  living i"+"n a pretty", takes(20))
+    assertMessage("parser fail@<anon>:2:20 #37: nope")
+    assertEquals(" house\n fa", takes())
+    assertEquals("lls in love with\n   an ugly frog.\r", takes(34))
+    assertMessage("parser fail@<anon>:5:1 #79: nope")
+    assertEquals("The frog says:", takes(14))
+    assertEquals("\r\n\"woo", takes(1+5))
+    assertMessage("parser fail@<anon>:6:4 #97: nope")
   }
+
+  private fun takes(n: Int = 10) = bpf.take(n).consume().stream().asSequence().joinToString("")
   @Test fun brief() {
     val view = briefView(pf)
     assertEquals(10, view?.length)
