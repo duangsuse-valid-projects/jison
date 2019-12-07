@@ -1,0 +1,7 @@
+{
+  "hello": "\tworld",
+  "simple_inner": {
+    "justified": false,
+    "excited": true
+  }
+}

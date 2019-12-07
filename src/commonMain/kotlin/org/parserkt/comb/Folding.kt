@@ -3,6 +3,8 @@ package org.parserkt.comb
 import org.parserkt.util.Box
 import org.parserkt.util.Idx
 
+// FIXME Reducer lifetime weaken
+
 interface Reducer<in T, out R> {
   val base: R
   fun accept(item: T)

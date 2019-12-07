@@ -16,6 +16,15 @@ sealed class Json {
   object Nil: Json()
 }
 
+val translateMap = mapOf(
+  '"' to '"',
+  '\\' to '\\',
+  '/' to '/',
+  'b' to '\b',
+  'f' to '\u0012', 't' to '\t',
+  'n' to '\n', 'r' to '\r'
+)
+
 typealias CParser<R> = Parser<Char, R>
 abstract class Lexer {
   val boolean = or(items("true") const Json.Bool(true),
@@ -44,14 +53,6 @@ abstract class Lexer {
   val digitsNoLeadingZero: CParser<Int> = or(digit.single(), oneNine contextual { digitsCtx(it, optional = true) })
   private val hexDigit: CParser<Int> = or(digit, element('A'..'F') then { it-'A'+10 }, element('a'..'f') then { it-'a'+10 })
 
-  private val translateMap = mapOf(
-    '"' to '"',
-    '\\' to '\\',
-    '/' to '/',
-    'b' to '\b',
-    'f' to '\u0012', 't' to '\t',
-    'n' to '\n', 'r' to '\r'
-  )
   private val escape = element(*translateMap.keys.toTypedArray()) then(translateMap::get)
   private val unicodeEscapeVal = seq(HexRead, hexDigit, hexDigit, hexDigit, hexDigit)
   private val unicodeEscape = seq(snd, items("\\u"), unicodeEscapeVal) then { it.force<Int>().toChar() }
@@ -74,8 +75,8 @@ abstract class Lexer {
 
 object JsonParser: CombinedParser<Json>, Lexer() {
   val scalar: CParser<Json> by lazy { or(jsonObj, jsonAry, string, number, boolean, nullLit) }
-  internal val element: CParser<Json> get() = seq(snd, ws, deferred { scalar }, ws).unwrap()
-  internal val kvPair: CParser<Pair<String, Json>> get() = seq(partialList(1,4),
+  internal inline val element: CParser<Json> get() = seq(snd, ws, deferred { scalar }, ws).unwrap()
+  internal inline val kvPair: CParser<Pair<String, Json>> get() = seq(partialList(1,4),
     ws, string, ws, tCOLON, element) then { Pair((it[0] as Json.Str).literal, it[1] as Json) }
 
   private val jsonObj: CParser<Json.Dict> = kvPair.joinBy(tCOMMA)
@@ -96,4 +97,4 @@ inline fun <T, reified R> Parser<T, R>.single(): Parser<T, R> = takeSingle@ { s 
   return@takeSingle res.takeIf { this.tryRead(s) == null }
 }
 
-private inline val snd get() = selecting<Any>(1)
+internal inline val snd get() = selecting<Any>(1)

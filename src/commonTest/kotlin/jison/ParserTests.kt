@@ -23,14 +23,16 @@ class ParserTests {
   @Test fun map() {
     val example = mapOf("name" to Json.Str("suz"),
       "age" to Json.Num(17.9),
-      "boy" to Json.Bool(true))
+      "boy" to Json.Bool(true),
+      "extra" to Json.Ary(listOf()))
     val jsObject = """
       {
         "name": "suz",
         "age": 17.9,
-        "boy": true
+        "boy": true,
+        "extra": []
       }
     """.trimIndent()
-    assertEquals(Json.Dict(example), JsonParser.scalar(feederOf(jsObject)))
+    assertEquals(Json.Dict(example), JsonParser.element(feederOf(jsObject)))
   }
 }
