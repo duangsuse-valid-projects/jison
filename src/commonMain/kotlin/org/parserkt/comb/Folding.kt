@@ -6,13 +6,14 @@ import org.parserkt.util.Idx
 interface Reducer<in T, out R> {
   val base: R
   fun accept(item: T)
+  fun finish(): R = base
 }
 
 abstract class Fold<in A, B> {
   abstract val initial: B
   abstract fun join(base: B, item: A): B
 
-  fun reducer(): Reducer<A, B> = object: Reducer<A, B> {
+  open fun reducer(): Reducer<A, B> = object: Reducer<A, B> {
     override var base: B = initial
     override fun accept(item: A) { base = join(base, item) }
   }
@@ -25,6 +26,13 @@ abstract class Monoid<T>(mzero: T, private val mplus: T.(T) -> T): Fold<T, T>() 
 abstract class Effect<in A, B>: Fold<A, B>() {
   abstract val acceptor: B.(A) -> Unit
   final override fun join(base: B, item: A): B = base.also { base.acceptor(item) }
+  open fun reset() {}
+
+  override fun reducer(): Reducer<A, B> = object: Reducer<A, B> {
+    override var base: B = initial
+    override fun accept(item: A) { base = join(base, item) }
+    override fun finish(): B = base.also { reset() }
+  }
 }
 
 fun <T> asList(): Effect<T, MutableList<T>> = object: Effect<T, MutableList<T>>() {
@@ -34,12 +42,14 @@ fun <T> asList(): Effect<T, MutableList<T>> = object: Effect<T, MutableList<T>>(
 
 fun <T> partialList(vararg indices: Idx): Effect<T, MutableList<T>> = object: Effect<T, MutableList<T>>() {
   private var position = 0
+  override fun reset() { position = 0 }
   override val initial: MutableList<T> get() = mutableListOf()
   override val acceptor: MutableList<T>.(T) -> Unit = { if (position in indices) add(it); ++position }
 }
 
 fun <T> selecting(index: Idx): Effect<T, Box<T?>> = object: Effect<T, Box<T?>>() {
   private var position = 0
+  override fun reset() { position = 0 }
   override val initial: Box<T?> get() = Box(null)
   override val acceptor: Box<T?>.(T) -> Unit = { if (position == index) item = it; ++position }
 }

@@ -1,4 +1,5 @@
 import org.parserkt.ArraySlice
+import org.parserkt.CharSlice
 import org.parserkt.Feeder
 import org.parserkt.SliceFeeder
 import kotlin.test.assertEquals
@@ -18,3 +19,4 @@ internal inline fun <reified EX: Exception> assertMessageEquals(expected: String
 }
 
 internal fun <T> feederOf(vararg item: T): Feeder<T> = SliceFeeder(ArraySlice(item))
+internal fun feederOf(str: CharSequence): Feeder<Char> = SliceFeeder(CharSlice(str))

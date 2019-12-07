@@ -34,5 +34,5 @@ class FolderTests {
     expected: R1, reducer: Reducer<T, R>,
     inputs: List<T>, f: (R) -> R1 = ::identity)
   { inputs.forEach(reducer::accept)
-    assertEquals(expected, reducer.base.let(f)) }
+    assertEquals(expected, reducer.finish().let(f)) }
 }

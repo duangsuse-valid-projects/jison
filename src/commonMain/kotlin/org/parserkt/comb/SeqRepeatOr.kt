@@ -7,7 +7,7 @@ fun <IN, T, R> seq(fold: Fold<T, R>, vararg sub: Parser<IN, T>): Parser<IN, R> =
   for (parse in sub)
     parse.tryRead(it)?.let(reducer::accept)
       ?: return@runParse nParsed
-  return@runParse reducer.base
+  return@runParse reducer.finish()
 }
 
 fun <IN, T, R> mustSeq(fold: Fold<T, R>, vararg sub: Parser<IN, T>): PositiveParser<IN, R> = runParse@ {
@@ -15,7 +15,7 @@ fun <IN, T, R> mustSeq(fold: Fold<T, R>, vararg sub: Parser<IN, T>): PositivePar
   for ((index, parse) in sub.withIndex())
     parse.tryRead(it)?.let(reducer::accept)
       ?: it.pFail(": seq $index")
-  return@runParse reducer.base
+  return@runParse reducer.finish()
 }
 
 fun <IN, T, R> repeat(fold: Fold<T, R>, item: Parser<IN, T>, bound: IntRange): Parser<IN, R> = runParse@ {
@@ -25,7 +25,7 @@ fun <IN, T, R> repeat(fold: Fold<T, R>, item: Parser<IN, T>, bound: IntRange): P
     val parsed = item.tryRead(it) ?: break
     reducer.accept(parsed).also { ++countParsed }
   }
-  return@runParse reducer.base.takeIf { countParsed in bound }
+  return@runParse reducer.finish().takeIf { countParsed in bound }
 }
 val SOME = 1..Int.MAX_VALUE
 val MAYBE = 0..Int.MAX_VALUE
@@ -36,7 +36,7 @@ fun <IN, T, R> repeatUntil(fold: Fold<T, R>, item: Parser<IN, T>, terminate: Par
     val parsed = item.tryRead(it) ?: break
     reducer.accept(parsed)
   }
-  return@runParse reducer.base
+  return@runParse reducer.finish()
 }
 
 fun <T, R> or(vararg sub: Parser<T, R>): Parser<T, R> = runParse@ { feeder ->

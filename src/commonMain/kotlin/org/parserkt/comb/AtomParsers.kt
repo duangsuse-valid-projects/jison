@@ -4,7 +4,7 @@ import org.parserkt.*
 import org.parserkt.util.Cnt
 import org.parserkt.util.Predicate
 
-fun <T> satisfy(predicate: Predicate<T>): Parser<T, T>
+inline fun <T> satisfy(crossinline predicate: Predicate<T>): Parser<T, T>
   = { s -> s.peek.takeIf(predicate)?.let { s.consume() } }
 
 fun <T> item(): Parser<T, T> = satisfy { true }
