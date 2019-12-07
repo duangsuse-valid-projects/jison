@@ -39,4 +39,11 @@ class LexerTests {
     assertEquals(Json.Str("hello"), JsonParser.string(feederOf("\"hello\"")))
     assertEquals(Json.Str("hello\uD83D\uDC14"), JsonParser.string(feederOf("\"hello\\uD83D\\uDC14\"")))
   }
+  @Test fun number() {
+    assertEquals(Json.Num(123.0), JsonParser.number(feederOf("123")))
+    assertEquals(Json.Num(123.0), JsonParser.number(feederOf("123.0")))
+    assertEquals(Json.Num(123.0), JsonParser.number(feederOf("123.000")))
+    assertEquals(Json.Num(-123.0), JsonParser.number(feederOf("-123.0")))
+    assertEquals(Json.Num(-123.0e-8), JsonParser.number(feederOf("-123.0e-8")))
+  }
 }

@@ -53,3 +53,5 @@ inline infix fun <T, R> Parser<T, R>.effect(crossinline op: Consumer<R>): Parser
 
 inline infix fun <T, R> Parser<T, R>.pre(crossinline op: Operation): Parser<T, R>
   = effectBefore@ { op(); return@effectBefore this(it) }
+
+fun <T, R> deferred(ps: Producer<Parser<T, R>>): Parser<T, R> = { ps()(it) }
