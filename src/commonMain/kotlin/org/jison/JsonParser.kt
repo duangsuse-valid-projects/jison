@@ -28,7 +28,7 @@ abstract class Lexer {
 
   val tCOLON = item(':')
   val tCOMMA = item(',')
-  val tD_QUOTE = item('"')
+  private val tQUOTE = item('"')
   val tLB = item('{'); val tRB = item('}')
   val tLS = item('['); val tRS = item(']')
   private val tMINUS = item('-')
@@ -56,8 +56,8 @@ abstract class Lexer {
   private val unicodeEscape = seq(snd, items("\\u"), unicodeEscapeVal) then { it.force<Int>().toChar() }
   val specialChar: Parser<Char, Char> = or(unicodeEscape,
     seq(snd, item('\\'), escape).unwrap())
-  private val character = or(specialChar, item()) // element('\u0020'..Char.MAX_LOW_SURROGATE)
-  val string: Parser<Char, Json> = seq(snd, tD_QUOTE,
+  private val character = or(specialChar, anyItem()) // element('\u0020'..Char.MAX_LOW_SURROGATE)
+  val string: Parser<Char, Json> = seq(snd, tQUOTE,
     repeatUntil(buildStr(), character, item('"')) then { Json.Str(it.toString()) }).unwrap()
 
   private val coefficientMap = mapOf('+' to 1, '-' to -1)

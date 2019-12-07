@@ -19,7 +19,7 @@ class SeqParserTests {
   @Test fun seqSoundness() {
     assertMessageEquals<ParserError>("parser fail: seq 1") { numbers(feederOf(1,2,3,4)) }
   }
-  private val oneTwo = seq(item(1), item())
+  private val oneTwo = seq(item(1), anyItem())
   @Test fun maySeq() {
     assertNotNull(oneTwo(feederOf(1,2)))
     assertNull(oneTwo(feederOf()))

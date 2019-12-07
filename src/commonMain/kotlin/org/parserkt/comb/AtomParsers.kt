@@ -7,7 +7,7 @@ import org.parserkt.util.Predicate
 inline fun <T> satisfy(crossinline predicate: Predicate<T>): Parser<T, T>
   = { s -> s.peek.takeIf(predicate)?.let { s.consume() } }
 
-fun <T> item(): Parser<T, T> = satisfy { true }
+fun <T> anyItem(): Parser<T, T> = satisfy { true }
 fun <T> item(x: T): Parser<T, T> = satisfy { it == x }
 fun <T> element(vararg xs: T): Parser<T, T> = satisfy { it in xs }
 fun element(xs: CharRange): Parser<Char, Char> = satisfy { it in xs }

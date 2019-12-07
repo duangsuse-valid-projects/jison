@@ -8,6 +8,7 @@ typealias Consumer<T> = (T) -> Unit
 typealias Predicate<T> = (T) -> Boolean
 typealias FoldLeft<A, B> = (B, A) -> B
 typealias FoldRight<A, B> = (A, B) -> B
+typealias Operation = Producer<Unit>
 
 fun <E> MutableList<E>.removeAtBegin(): E = this.removeAt(0)
 fun <E> MutableList<E>.removeAtEnd(): E = this.removeAt(lastIndex)
