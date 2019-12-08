@@ -75,7 +75,7 @@ abstract class Lexer {
 
 object JsonParser: CombinedParser<Json>, Lexer() {
   val scalar: CParser<Json> by lazy { or(jsonObj, jsonAry, string, number, boolean, nullLit) }
-  internal inline val element: CParser<Json> get() = mustSeq(snd, ws, deferred { scalar }, ws).unwrap()
+  internal inline val element: CParser<Json> get() = seq(snd, ws, deferred { scalar }, ws).unwrap()
   internal inline val kvPair: CParser<Pair<String, Json>> get() = seq(partialList(1,4),
     ws, string, ws, tCOLON, element) then { Pair((it[0] as Json.Str).literal, it[1] as Json) }
 
