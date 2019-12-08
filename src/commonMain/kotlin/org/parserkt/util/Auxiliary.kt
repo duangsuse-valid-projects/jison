@@ -19,5 +19,7 @@ fun <E> MutableList<E>.justAdd(item: E) { add(item) }
 fun impossible(): Nothing = throw IllegalStateException()
 
 data class Box<T>(var item: T)
+inline fun <T> Box<T?>.map(crossinline f: (T?) -> T): Box<T> = Box(f(this.item))
+fun <T> Box<T?>.ensure(): Box<T> = map { it!! }
 fun <T> Box<T?>.get(): T = item!!
 inline fun <reified R> Box<*>.force(): R = item as R

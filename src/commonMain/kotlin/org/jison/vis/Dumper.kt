@@ -16,35 +16,40 @@ class Dumper(private val indent: String): JsonVisitor<Unit> {
 
   private fun w(text: String): StringBuilder = buffer.append(text)
   private fun w(symbol: Char): StringBuilder = buffer.append(symbol)
-  private fun writeIndent()
-    { for (_i in 1..currentLevel) buffer.append(indent); buffer.append('\n') }
+  private fun writeIndent() {
+    if(currentLevel != 0)
+    for (_i in 1..currentLevel) buffer.append(indent) }
   private fun withIncLevel(op: Operation) = currentLevel++.run { op() }.also { currentLevel-- }
+  private fun writeNL() = w('\n')
 
   private fun dump(v: Json) { v.visitedBy(this) }
 
   override fun see(dict: Json.Dict) {
-    writeIndent(); w('{')
+    writeIndent(); w('{'); writeNL()
     withIncLevel {
-      for ((k, v) in dict.map) {
-        writeIndent(); writeStr(k); w(": "); dump(v); w(',')
+      for ((i, kv) in dict.map.entries.withIndex()) {
+        val (k ,v) = kv; writeIndent()
+          writeStr(k); w(": "); dump(v)
+        if (i != dict.map.size.dec()) {
+          w(','); writeNL() }
       }
     }
-    writeIndent(); w('}')
+    writeIndent(); w('}'); writeNL()
   }
 
+  private val Json.isMixed get() = this is Json.Ary || this is Json.Dict
+
   override fun see(ary: Json.Ary) {
-    writeIndent(); w('[')
+    writeIndent(); w('['); writeNL()
     withIncLevel {
       for (x in ary.xs){
         writeIndent(); dump(x)
       }
     }
-    writeIndent(); w(']')
+    writeIndent(); w(']'); writeNL()
   }
 
-  override fun see(str: Json.Str) {
-    writeStr(str.literal)
-  }
+  override fun see(str: Json.Str) { writeStr(str.literal) }
 
   private fun writeStr(str: String) {
     w('"')
@@ -52,22 +57,16 @@ class Dumper(private val indent: String): JsonVisitor<Unit> {
     w('"')
   }
 
-  override fun see(num: Json.Num) {
-    w(num.i.toString())
-  }
-
-  override fun see(boo: Json.Bool) {
-    w(boo.toString())
-  }
-
-  override fun see(nil: Json.Nil) {
-    w("null")
-  }
+  override fun see(num: Json.Num) { w(num.i.toString()) }
+  override fun see(boo: Json.Bool) { w(boo.p.toString()) }
+  override fun see(nil: Json.Nil) { w("null") }
 }
+
 internal infix fun Char.repeatFor(n: Cnt): String {
-  val ary = Array<Char>(n) {this}
+  val ary = Array(n) {this}
   return ary.joinToString("")
 }
+
 val backTranslate = translateMap.entries.map { it.value to it.key }.toMap()
 private fun String.translate(escape: Char = '\\', mapping: Map<Char, Char>): String {
   val src = toList(); val sb = StringBuilder()

@@ -54,13 +54,13 @@ abstract class Lexer {
   private val hexDigit: CParser<Int> = or(digit, element('A'..'F') then { it-'A'+10 }, element('a'..'f') then { it-'a'+10 })
 
   private val escape = element(*translateMap.keys.toTypedArray()) then(translateMap::get)
-  private val unicodeEscapeVal = seq(HexRead, hexDigit, hexDigit, hexDigit, hexDigit)
+  private val unicodeEscapeVal = mustSeq(HexRead, hexDigit, hexDigit, hexDigit, hexDigit)
   private val unicodeEscape = seq(snd, items("\\u"), unicodeEscapeVal) then { it.force<Int>().toChar() }
   private val enumEscape: CParser<Char> = seq(snd, item('\\'), escape).unwrap()
   val specialChar = or(unicodeEscape, enumEscape)
   private val character = or(specialChar, anyItem()) // element('\u0020'..Char.MAX_LOW_SURROGATE)
   val string: CParser<Json.Str> = seq(snd, tQUOTE,
-    repeatUntil(buildStr(), character, item('"')) then { Json.Str(it.toString()) }).unwrap()
+    repeatUntil(buildStr(), character, item('"')) then { Json.Str(it) }).unwrap()
 
   private val coefficientMap = mapOf('+' to 1, '-' to -1)
   private val sign = element('+', '-')
@@ -75,7 +75,7 @@ abstract class Lexer {
 
 object JsonParser: CombinedParser<Json>, Lexer() {
   val scalar: CParser<Json> by lazy { or(jsonObj, jsonAry, string, number, boolean, nullLit) }
-  internal inline val element: CParser<Json> get() = seq(snd, ws, deferred { scalar }, ws).unwrap()
+  internal inline val element: CParser<Json> get() = mustSeq(snd, ws, deferred { scalar }, ws).unwrap()
   internal inline val kvPair: CParser<Pair<String, Json>> get() = seq(partialList(1,4),
     ws, string, ws, tCOLON, element) then { Pair((it[0] as Json.Str).literal, it[1] as Json) }
 

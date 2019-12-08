@@ -20,13 +20,12 @@ class FolderTests {
     val fr = org.parserkt.comb.selecting<Int>(1)
     val list = listOf(2,9,1)
     assertReduction(Box(9), fr.reducer(), list)
-    assertReduction(Box(null), fr.reducer(), listOf(0))
   }
   @Test fun buildStr() {
     val fr = org.parserkt.comb.buildStr()
     val abc = "I can say the ABCs"
     val list = abc.toList()
-    for (_i in 1..2) assertReduction(abc, fr.reducer(), list, StringBuilder::toString)
+    for (_i in 1..2) assertReduction(abc, fr.reducer(), list)
   }
 
   private inline fun <T, reified TT> identity(x: T): TT = x as TT //emm

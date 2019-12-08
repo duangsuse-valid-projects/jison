@@ -2,7 +2,7 @@ package org.parserkt.comb
 
 import org.parserkt.util.Cnt
 
-fun <IN, T, R> seq(fold: Fold<T, R>, vararg sub: Parser<IN, T>): Parser<IN, R> = runParse@ {
+fun <IN, T, R> seq(fold: Foldr<T, R>, vararg sub: Parser<IN, T>): Parser<IN, R> = runParse@ {
   val reducer = fold.reducer()
   for (parse in sub)
     parse.tryRead(it)?.let(reducer::accept)
@@ -10,7 +10,7 @@ fun <IN, T, R> seq(fold: Fold<T, R>, vararg sub: Parser<IN, T>): Parser<IN, R> =
   return@runParse reducer.finish()
 }
 
-fun <IN, T, R> mustSeq(fold: Fold<T, R>, vararg sub: Parser<IN, T>): PositiveParser<IN, R> = runParse@ {
+fun <IN, T, R> mustSeq(fold: Foldr<T, R>, vararg sub: Parser<IN, T>): PositiveParser<IN, R> = runParse@ {
   val reducer = fold.reducer()
   for ((index, parse) in sub.withIndex())
     parse.tryRead(it)?.let(reducer::accept)
@@ -18,7 +18,7 @@ fun <IN, T, R> mustSeq(fold: Fold<T, R>, vararg sub: Parser<IN, T>): PositivePar
   return@runParse reducer.finish()
 }
 
-fun <IN, T, R> repeat(fold: Fold<T, R>, item: Parser<IN, T>, bound: IntRange): Parser<IN, R> = runParse@ {
+fun <IN, T, R> repeat(fold: Foldr<T, R>, item: Parser<IN, T>, bound: IntRange): Parser<IN, R> = runParse@ {
   val reducer = fold.reducer()
   var countParsed: Cnt = 0
   while (true) {
@@ -30,7 +30,7 @@ fun <IN, T, R> repeat(fold: Fold<T, R>, item: Parser<IN, T>, bound: IntRange): P
 val SOME = 1..Int.MAX_VALUE
 val MAYBE = 0..Int.MAX_VALUE
 
-fun <IN, T, R> repeatUntil(fold: Fold<T, R>, item: Parser<IN, T>, terminate: Parser<IN, *>): Parser<IN, R> = runParse@ {
+fun <IN, T, R> repeatUntil(fold: Foldr<T, R>, item: Parser<IN, T>, terminate: Parser<IN, *>): Parser<IN, R> = runParse@ {
   val reducer = fold.reducer()
   while (terminate.tryRead(it) == nParsed) {
     val parsed = item.tryRead(it) ?: break
@@ -46,7 +46,7 @@ fun <T, R> or(vararg sub: Parser<T, R>): Parser<T, R> = runParse@ { feeder ->
 }
 
 ////
-fun <T, R> mustSeq(vararg sub: Parser<T, R>): PositiveParser<T, MutableList<R>> = mustSeq(asList(), *sub)
-fun <T, R> seq(vararg sub: Parser<T, R>): Parser<T, MutableList<R>> = seq(asList(), *sub)
+fun <T, R> mustSeq(vararg sub: Parser<T, R>): PositiveParser<T, List<R>> = mustSeq(asList(), *sub)
+fun <T, R> seq(vararg sub: Parser<T, R>): Parser<T, List<R>> = seq(asList(), *sub)
 fun <T, R> repeat(sub: Parser<T, R>, n: IntRange = MAYBE): Parser<T, List<R>> = repeat(asList(), sub, n)
 fun <T, R> repeat1(sub: Parser<T, R>): Parser<T, List<R>> = repeat(sub, SOME)

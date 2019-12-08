@@ -10,21 +10,22 @@ class FoldingTests {
   @Test fun completeness() {
     val reducer = asList<Int>().reducer()
     for (i in listOf(1,2,3)) reducer.accept(i)
-    assertEquals(listOf(1,2,3), reducer.base)
+    assertEquals(listOf(1,2,3), reducer.finish())
   }
   object Sum: Monoid<Int>(0, Int::plus)
   @Test fun monoidFold() {
     val reducer = Sum.reducer()
     for (i in setOf(1,2,3)) reducer.accept(i)
-    assertEquals(1+2+3, reducer.base)
+    assertEquals(1+2+3, reducer.finish())
   }
-  object DecimalRead: Fold<Char, Int>() {
+  object DecimalRead: Fold<Char, Int, Int>() {
     override val initial = 0
     override fun join(base: Int, item: Char): Int = base*10 + (item-'0')
+    override fun finish(accumulator: Int): Int = accumulator
   }
   @Test fun complexFold() {
     val reducer = DecimalRead.reducer()
     "12345".forEach(reducer::accept)
-    assertEquals(12345, reducer.base)
+    assertEquals(12345, reducer.finish())
   }
 }
